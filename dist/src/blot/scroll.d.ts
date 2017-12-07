@@ -1,12 +1,13 @@
 import ContainerBlot from './abstract/container';
-import * as Registry from '../registry';
+import EditorRegistry, * as Registry from '../registry';
 declare class ScrollBlot extends ContainerBlot {
+    editorRegistry: EditorRegistry;
     static blotName: string;
     static defaultChild: string;
     static scope: Registry.Scope;
     static tagName: string;
     observer: MutationObserver;
-    constructor(node: HTMLDivElement);
+    constructor(editorRegistry: EditorRegistry, node: HTMLDivElement);
     detach(): void;
     deleteAt(index: number, length: number): void;
     formatAt(index: number, length: number, name: string, value: any): void;

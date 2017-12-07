@@ -1,5 +1,5 @@
 import { Blot, Parent, Formattable } from './blot';
-import * as Registry from '../../registry';
+import EditorRegistry, * as Registry from '../../registry';
 
 class ShadowBlot implements Blot {
   static blotName = 'abstract';
@@ -45,7 +45,7 @@ class ShadowBlot implements Blot {
     return node;
   }
 
-  constructor(public domNode: Node) {
+  constructor(public editorRegistry: EditorRegistry, public domNode: Node) {
     this.domNode[Registry.DATA_KEY] = { blot: this };
   }
 
@@ -57,7 +57,7 @@ class ShadowBlot implements Blot {
 
   clone(): Blot {
     let domNode = this.domNode.cloneNode(false);
-    return Registry.create(domNode);
+    return this.editorRegistry.create(domNode);
   }
 
   detach() {
@@ -72,17 +72,17 @@ class ShadowBlot implements Blot {
 
   formatAt(index: number, length: number, name: string, value: any): void {
     let blot = this.isolate(index, length);
-    if (Registry.query(name, Registry.Scope.BLOT) != null && value) {
+    if (this.editorRegistry.query(name, Registry.Scope.BLOT) != null && value) {
       blot.wrap(name, value);
-    } else if (Registry.query(name, Registry.Scope.ATTRIBUTE) != null) {
-      let parent = <Parent & Formattable>Registry.create(this.statics.scope);
+    } else if (this.editorRegistry.query(name, Registry.Scope.ATTRIBUTE) != null) {
+      let parent = <Parent & Formattable>this.editorRegistry.create(this.statics.scope);
       blot.wrap(parent);
       parent.format(name, value);
     }
   }
 
   insertAt(index: number, value: string, def?: any): void {
-    let blot = def == null ? Registry.create('text', value) : Registry.create(value, def);
+    let blot = def == null ? this.editorRegistry.create('text', value) : this.editorRegistry.create(value, def);
     let ref = this.split(index);
     this.parent.insertBefore(blot, ref);
   }
@@ -141,7 +141,7 @@ class ShadowBlot implements Blot {
   }
 
   replaceWith(name: string | Blot, value?: any): Blot {
-    let replacement = typeof name === 'string' ? Registry.create(name, value) : name;
+    let replacement = typeof name === 'string' ? this.editorRegistry.create(name, value) : name;
     replacement.replace(this);
     return replacement;
   }
@@ -155,7 +155,7 @@ class ShadowBlot implements Blot {
   }
 
   wrap(name: string | Parent, value?: any): Parent {
-    let wrapper = typeof name === 'string' ? <Parent>Registry.create(name, value) : name;
+    let wrapper = typeof name === 'string' ? <Parent>this.editorRegistry.create(name, value) : name;
     if (this.parent != null) {
       this.parent.insertBefore(wrapper, this.next);
     }

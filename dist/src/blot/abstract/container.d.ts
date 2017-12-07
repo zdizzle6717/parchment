@@ -1,12 +1,14 @@
 import { Blot, Parent } from './blot';
 import LinkedList from '../../collection/linked-list';
 import ShadowBlot from './shadow';
+import EditorRegistry from '../../registry';
 declare class ContainerBlot extends ShadowBlot implements Parent {
+    editorRegistry: EditorRegistry;
     static defaultChild: string;
     static allowedChildren: any[];
     children: LinkedList<Blot>;
     domNode: HTMLElement;
-    constructor(domNode: Node);
+    constructor(editorRegistry: EditorRegistry, domNode: Node);
     appendChild(other: Blot): void;
     attach(): void;
     build(): void;

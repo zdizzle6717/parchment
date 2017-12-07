@@ -1,7 +1,7 @@
 import { Blot, Parent, Leaf } from './blot';
 import LinkedList from '../../collection/linked-list';
 import ShadowBlot from './shadow';
-import * as Registry from '../../registry';
+import EditorRegistry, * as Registry from '../../registry';
 
 class ContainerBlot extends ShadowBlot implements Parent {
   static defaultChild: string;
@@ -10,8 +10,8 @@ class ContainerBlot extends ShadowBlot implements Parent {
   children: LinkedList<Blot>;
   domNode: HTMLElement;
 
-  constructor(domNode: Node) {
-    super(domNode);
+  constructor(public editorRegistry: EditorRegistry, domNode: Node) {
+    super(editorRegistry, domNode);
     this.build();
   }
 
@@ -106,7 +106,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
     if (child) {
       child.insertAt(offset, value, def);
     } else {
-      let blot = def == null ? Registry.create('text', value) : Registry.create(value, def);
+      let blot = def == null ? this.editorRegistry.create('text', value) : this.editorRegistry.create(value, def);
       this.appendChild(blot);
     }
   }
@@ -141,7 +141,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
     super.optimize(context);
     if (this.children.length === 0) {
       if (this.statics.defaultChild != null) {
-        let child = Registry.create(this.statics.defaultChild);
+        let child = this.editorRegistry.create(this.statics.defaultChild);
         this.appendChild(child);
         child.optimize(context);
       } else {
@@ -211,7 +211,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
       ) {
         return;
       }
-      let blot = Registry.find(node);
+      let blot = this.editorRegistry.find(node);
       if (blot == null) return;
       if (blot.domNode.parentNode == null || blot.domNode.parentNode === this.domNode) {
         blot.detach();
@@ -231,7 +231,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
       .forEach(node => {
         let refBlot = null;
         if (node.nextSibling != null) {
-          refBlot = Registry.find(node.nextSibling);
+          refBlot = this.editorRegistry.find(node.nextSibling);
         }
         let blot = makeBlot(node);
         if (blot.next != refBlot || blot.next == null) {
@@ -245,12 +245,12 @@ class ContainerBlot extends ShadowBlot implements Parent {
 }
 
 function makeBlot(node): Blot {
-  let blot = Registry.find(node);
+  let blot = this.editorRegistry.find(node);
   if (blot == null) {
     try {
-      blot = Registry.create(node);
+      blot = this.editorRegistry.create(node);
     } catch (e) {
-      blot = Registry.create(Registry.Scope.INLINE);
+      blot = this.editorRegistry.create(Registry.Scope.INLINE);
       [].slice.call(node.childNodes).forEach(function(child) {
         blot.domNode.appendChild(child);
       });

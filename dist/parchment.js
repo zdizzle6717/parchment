@@ -103,10 +103,6 @@ var ParchmentError = /** @class */ (function (_super) {
     return ParchmentError;
 }(Error));
 exports.ParchmentError = ParchmentError;
-var attributes = {};
-var classes = {};
-var tags = {};
-var types = {};
 exports.DATA_KEY = '__blot';
 var Scope;
 (function (Scope) {
@@ -122,105 +118,112 @@ var Scope;
     Scope[Scope["INLINE_ATTRIBUTE"] = 5] = "INLINE_ATTRIBUTE";
     Scope[Scope["ANY"] = 15] = "ANY";
 })(Scope = exports.Scope || (exports.Scope = {}));
-function create(input, value) {
-    var match = query(input);
-    if (match == null) {
-        throw new ParchmentError("Unable to create " + input + " blot");
+var EditorRegistry = /** @class */ (function () {
+    function EditorRegistry() {
+        this.attributes = {};
+        this.classes = {};
+        this.tags = {};
+        this.types = {};
     }
-    var BlotClass = match;
-    var node = input instanceof Node || input['nodeType'] === Node.TEXT_NODE ? input : BlotClass.create(value);
-    return new BlotClass(node, value);
-}
-exports.create = create;
-function find(node, bubble) {
-    if (bubble === void 0) { bubble = false; }
-    if (node == null)
+    EditorRegistry.prototype.create = function (input, value) {
+        var match = this.query(input);
+        if (match == null) {
+            throw new ParchmentError("Unable to create " + input + " blot");
+        }
+        var BlotClass = match;
+        var node = input instanceof Node || input['nodeType'] === Node.TEXT_NODE ? input : BlotClass.create(value);
+        return new BlotClass(this, node, value);
+    };
+    EditorRegistry.prototype.find = function (node, bubble) {
+        if (bubble === void 0) { bubble = false; }
+        if (node == null)
+            return null;
+        if (node[exports.DATA_KEY] != null)
+            return node[exports.DATA_KEY].blot;
+        if (bubble)
+            return this.find(node.parentNode, bubble);
         return null;
-    if (node[exports.DATA_KEY] != null)
-        return node[exports.DATA_KEY].blot;
-    if (bubble)
-        return find(node.parentNode, bubble);
-    return null;
-}
-exports.find = find;
-function query(query, scope) {
-    if (scope === void 0) { scope = Scope.ANY; }
-    var match;
-    if (typeof query === 'string') {
-        match = types[query] || attributes[query];
-    }
-    else if (query instanceof Text || query['nodeType'] === Node.TEXT_NODE) {
-        match = types['text'];
-    }
-    else if (typeof query === 'number') {
-        if (query & Scope.LEVEL & Scope.BLOCK) {
-            match = types['block'];
+    };
+    EditorRegistry.prototype.query = function (query, scope) {
+        if (scope === void 0) { scope = Scope.ANY; }
+        var match;
+        if (typeof query === 'string') {
+            match = this.types[query] || this.attributes[query];
         }
-        else if (query & Scope.LEVEL & Scope.INLINE) {
-            match = types['inline'];
+        else if (query instanceof Text || query['nodeType'] === Node.TEXT_NODE) {
+            match = this.types['text'];
         }
-    }
-    else if (query instanceof HTMLElement) {
-        var names = (query.getAttribute('class') || '').split(/\s+/);
-        for (var i in names) {
-            match = classes[names[i]];
-            if (match)
-                break;
+        else if (typeof query === 'number') {
+            if (query & Scope.LEVEL & Scope.BLOCK) {
+                match = this.types['block'];
+            }
+            else if (query & Scope.LEVEL & Scope.INLINE) {
+                match = this.types['inline'];
+            }
         }
-        match = match || tags[query.tagName];
-    }
-    if (match == null)
+        else if (query instanceof HTMLElement) {
+            var names = (query.getAttribute('class') || '').split(/\s+/);
+            for (var i in names) {
+                match = this.classes[names[i]];
+                if (match)
+                    break;
+            }
+            match = match || this.tags[query.tagName];
+        }
+        if (match == null)
+            return null;
+        if (scope & Scope.LEVEL & match.scope && scope & Scope.TYPE & match.scope)
+            return match;
         return null;
-    if (scope & Scope.LEVEL & match.scope && scope & Scope.TYPE & match.scope)
-        return match;
-    return null;
-}
-exports.query = query;
-function register() {
-    var Definitions = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        Definitions[_i] = arguments[_i];
-    }
-    if (Definitions.length > 1) {
-        return Definitions.map(function (d) {
-            return register(d);
-        });
-    }
-    var Definition = Definitions[0];
-    if (typeof Definition.blotName !== 'string' && typeof Definition.attrName !== 'string') {
-        throw new ParchmentError('Invalid definition');
-    }
-    else if (Definition.blotName === 'abstract') {
-        throw new ParchmentError('Cannot register abstract class');
-    }
-    types[Definition.blotName || Definition.attrName] = Definition;
-    if (typeof Definition.keyName === 'string') {
-        attributes[Definition.keyName] = Definition;
-    }
-    else {
-        if (Definition.className != null) {
-            classes[Definition.className] = Definition;
+    };
+    EditorRegistry.prototype.register = function () {
+        var Definitions = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            Definitions[_i] = arguments[_i];
         }
-        if (Definition.tagName != null) {
-            if (Array.isArray(Definition.tagName)) {
-                Definition.tagName = Definition.tagName.map(function (tagName) {
-                    return tagName.toUpperCase();
-                });
-            }
-            else {
-                Definition.tagName = Definition.tagName.toUpperCase();
-            }
-            var tagNames = Array.isArray(Definition.tagName) ? Definition.tagName : [Definition.tagName];
-            tagNames.forEach(function (tag) {
-                if (tags[tag] == null || Definition.className == null) {
-                    tags[tag] = Definition;
-                }
+        if (Definitions.length > 1) {
+            return Definitions.map(function (d) {
+                return this.register(d);
             });
         }
-    }
-    return Definition;
-}
-exports.register = register;
+        var Definition = Definitions[0];
+        if (typeof Definition.blotName !== 'string' && typeof Definition.attrName !== 'string') {
+            throw new ParchmentError('Invalid definition');
+        }
+        else if (Definition.blotName === 'abstract') {
+            throw new ParchmentError('Cannot register abstract class');
+        }
+        this.types[Definition.blotName || Definition.attrName] = Definition;
+        if (typeof Definition.keyName === 'string') {
+            this.attributes[Definition.keyName] = Definition;
+        }
+        else {
+            if (Definition.className != null) {
+                this.classes[Definition.className] = Definition;
+            }
+            if (Definition.tagName != null) {
+                if (Array.isArray(Definition.tagName)) {
+                    Definition.tagName = Definition.tagName.map(function (tagName) {
+                        return tagName.toUpperCase();
+                    });
+                }
+                else {
+                    Definition.tagName = Definition.tagName.toUpperCase();
+                }
+                var tagNames = Array.isArray(Definition.tagName) ? Definition.tagName : [Definition.tagName];
+                tagNames.forEach(function (tag) {
+                    if (this.tags[tag] == null || Definition.className == null) {
+                        this.tags[tag] = Definition;
+                    }
+                });
+            }
+        }
+        return Definition;
+    };
+    return EditorRegistry;
+}());
+exports.default = EditorRegistry;
+;
 
 
 /***/ }),
@@ -252,14 +255,14 @@ var Attributor = /** @class */ (function () {
             return item.name;
         });
     };
-    Attributor.prototype.add = function (node, value) {
-        if (!this.canAdd(node, value))
+    Attributor.prototype.add = function (node, value, editorRegistry) {
+        if (!this.canAdd(node, value, editorRegistry))
             return false;
         node.setAttribute(this.keyName, value);
         return true;
     };
-    Attributor.prototype.canAdd = function (node, value) {
-        var match = Registry.query(node, Registry.Scope.BLOT & (this.scope | Registry.Scope.TYPE));
+    Attributor.prototype.canAdd = function (node, value, editorRegistry) {
+        var match = editorRegistry.query(node, Registry.Scope.BLOT & (this.scope | Registry.Scope.TYPE));
         if (match == null)
             return false;
         if (this.whitelist == null)
@@ -274,9 +277,9 @@ var Attributor = /** @class */ (function () {
     Attributor.prototype.remove = function (node) {
         node.removeAttribute(this.keyName);
     };
-    Attributor.prototype.value = function (node) {
+    Attributor.prototype.value = function (node, editorRegistry) {
         var value = node.getAttribute(this.keyName);
-        return this.canAdd(node, value) ? value : '';
+        return this.canAdd(node, value, editorRegistry) ? value : '';
     };
     return Attributor;
 }());
@@ -305,8 +308,9 @@ var shadow_1 = __webpack_require__(5);
 var Registry = __webpack_require__(0);
 var ContainerBlot = /** @class */ (function (_super) {
     __extends(ContainerBlot, _super);
-    function ContainerBlot(domNode) {
-        var _this = _super.call(this, domNode) || this;
+    function ContainerBlot(editorRegistry, domNode) {
+        var _this = _super.call(this, editorRegistry, domNode) || this;
+        _this.editorRegistry = editorRegistry;
         _this.build();
         return _this;
     }
@@ -393,7 +397,7 @@ var ContainerBlot = /** @class */ (function (_super) {
             child.insertAt(offset, value, def);
         }
         else {
-            var blot = def == null ? Registry.create('text', value) : Registry.create(value, def);
+            var blot = def == null ? this.editorRegistry.create('text', value) : this.editorRegistry.create(value, def);
             this.appendChild(blot);
         }
     };
@@ -420,7 +424,7 @@ var ContainerBlot = /** @class */ (function (_super) {
         _super.prototype.optimize.call(this, context);
         if (this.children.length === 0) {
             if (this.statics.defaultChild != null) {
-                var child = Registry.create(this.statics.defaultChild);
+                var child = this.editorRegistry.create(this.statics.defaultChild);
                 this.appendChild(child);
                 child.optimize(context);
             }
@@ -488,7 +492,7 @@ var ContainerBlot = /** @class */ (function (_super) {
                 document.body.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_CONTAINED_BY) {
                 return;
             }
-            var blot = Registry.find(node);
+            var blot = _this.editorRegistry.find(node);
             if (blot == null)
                 return;
             if (blot.domNode.parentNode == null || blot.domNode.parentNode === _this.domNode) {
@@ -510,7 +514,7 @@ var ContainerBlot = /** @class */ (function (_super) {
             .forEach(function (node) {
             var refBlot = null;
             if (node.nextSibling != null) {
-                refBlot = Registry.find(node.nextSibling);
+                refBlot = _this.editorRegistry.find(node.nextSibling);
             }
             var blot = makeBlot(node);
             if (blot.next != refBlot || blot.next == null) {
@@ -524,13 +528,13 @@ var ContainerBlot = /** @class */ (function (_super) {
     return ContainerBlot;
 }(shadow_1.default));
 function makeBlot(node) {
-    var blot = Registry.find(node);
+    var blot = this.editorRegistry.find(node);
     if (blot == null) {
         try {
-            blot = Registry.create(node);
+            blot = this.editorRegistry.create(node);
         }
         catch (e) {
-            blot = Registry.create(Registry.Scope.INLINE);
+            blot = this.editorRegistry.create(Registry.Scope.INLINE);
             [].slice.call(node.childNodes).forEach(function (child) {
                 blot.domNode.appendChild(child);
             });
@@ -563,12 +567,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var attributor_1 = __webpack_require__(1);
 var store_1 = __webpack_require__(6);
 var container_1 = __webpack_require__(2);
-var Registry = __webpack_require__(0);
 var FormatBlot = /** @class */ (function (_super) {
     __extends(FormatBlot, _super);
-    function FormatBlot(domNode) {
-        var _this = _super.call(this, domNode) || this;
-        _this.attributes = new store_1.default(_this.domNode);
+    function FormatBlot(editorRegistry, domNode) {
+        var _this = _super.call(this, editorRegistry, domNode) || this;
+        _this.editorRegistry = editorRegistry;
+        _this.attributes = new store_1.default(editorRegistry, _this.domNode);
         return _this;
     }
     FormatBlot.formats = function (domNode) {
@@ -581,7 +585,7 @@ var FormatBlot = /** @class */ (function (_super) {
         return undefined;
     };
     FormatBlot.prototype.format = function (name, value) {
-        var format = Registry.query(name);
+        var format = this.editorRegistry.query(name);
         if (format instanceof attributor_1.default) {
             this.attributes.attribute(format, value);
         }
@@ -684,7 +688,8 @@ exports.default = LeafBlot;
 Object.defineProperty(exports, "__esModule", { value: true });
 var Registry = __webpack_require__(0);
 var ShadowBlot = /** @class */ (function () {
-    function ShadowBlot(domNode) {
+    function ShadowBlot(editorRegistry, domNode) {
+        this.editorRegistry = editorRegistry;
         this.domNode = domNode;
         this.domNode[Registry.DATA_KEY] = { blot: this };
     }
@@ -733,7 +738,7 @@ var ShadowBlot = /** @class */ (function () {
     };
     ShadowBlot.prototype.clone = function () {
         var domNode = this.domNode.cloneNode(false);
-        return Registry.create(domNode);
+        return this.editorRegistry.create(domNode);
     };
     ShadowBlot.prototype.detach = function () {
         if (this.parent != null)
@@ -746,17 +751,17 @@ var ShadowBlot = /** @class */ (function () {
     };
     ShadowBlot.prototype.formatAt = function (index, length, name, value) {
         var blot = this.isolate(index, length);
-        if (Registry.query(name, Registry.Scope.BLOT) != null && value) {
+        if (this.editorRegistry.query(name, Registry.Scope.BLOT) != null && value) {
             blot.wrap(name, value);
         }
-        else if (Registry.query(name, Registry.Scope.ATTRIBUTE) != null) {
-            var parent_1 = Registry.create(this.statics.scope);
+        else if (this.editorRegistry.query(name, Registry.Scope.ATTRIBUTE) != null) {
+            var parent_1 = this.editorRegistry.create(this.statics.scope);
             blot.wrap(parent_1);
             parent_1.format(name, value);
         }
     };
     ShadowBlot.prototype.insertAt = function (index, value, def) {
-        var blot = def == null ? Registry.create('text', value) : Registry.create(value, def);
+        var blot = def == null ? this.editorRegistry.create('text', value) : this.editorRegistry.create(value, def);
         var ref = this.split(index);
         this.parent.insertBefore(blot, ref);
     };
@@ -807,7 +812,7 @@ var ShadowBlot = /** @class */ (function () {
         target.remove();
     };
     ShadowBlot.prototype.replaceWith = function (name, value) {
-        var replacement = typeof name === 'string' ? Registry.create(name, value) : name;
+        var replacement = typeof name === 'string' ? this.editorRegistry.create(name, value) : name;
         replacement.replace(this);
         return replacement;
     };
@@ -818,7 +823,7 @@ var ShadowBlot = /** @class */ (function () {
         // Nothing to do by default
     };
     ShadowBlot.prototype.wrap = function (name, value) {
-        var wrapper = typeof name === 'string' ? Registry.create(name, value) : name;
+        var wrapper = typeof name === 'string' ? this.editorRegistry.create(name, value) : name;
         if (this.parent != null) {
             this.parent.insertBefore(wrapper, this.next);
         }
@@ -843,16 +848,17 @@ var class_1 = __webpack_require__(7);
 var style_1 = __webpack_require__(8);
 var Registry = __webpack_require__(0);
 var AttributorStore = /** @class */ (function () {
-    function AttributorStore(domNode) {
+    function AttributorStore(editorRegistry, domNode) {
         this.attributes = {};
         this.domNode = domNode;
+        this.editorRegistry = editorRegistry;
         this.build();
     }
     AttributorStore.prototype.attribute = function (attribute, value) {
         // verb
         if (value) {
-            if (attribute.add(this.domNode, value)) {
-                if (attribute.value(this.domNode) != null) {
+            if (attribute.add(this.domNode, value, this.editorRegistry)) {
+                if (attribute.value(this.domNode, this.editorRegistry) != null) {
                     this.attributes[attribute.attrName] = attribute;
                 }
                 else {
@@ -875,7 +881,7 @@ var AttributorStore = /** @class */ (function () {
             .concat(classes)
             .concat(styles)
             .forEach(function (name) {
-            var attr = Registry.query(name, Registry.Scope.ATTRIBUTE);
+            var attr = _this.editorRegistry.query(name, Registry.Scope.ATTRIBUTE);
             if (attr instanceof attributor_1.default) {
                 _this.attributes[attr.attrName] = attr;
             }
@@ -884,7 +890,7 @@ var AttributorStore = /** @class */ (function () {
     AttributorStore.prototype.copy = function (target) {
         var _this = this;
         Object.keys(this.attributes).forEach(function (key) {
-            var value = _this.attributes[key].value(_this.domNode);
+            var value = _this.attributes[key].value(_this.domNode, _this.editorRegistry);
             target.format(key, value);
         });
     };
@@ -899,7 +905,7 @@ var AttributorStore = /** @class */ (function () {
     AttributorStore.prototype.values = function () {
         var _this = this;
         return Object.keys(this.attributes).reduce(function (attributes, name) {
-            attributes[name] = _this.attributes[name].value(_this.domNode);
+            attributes[name] = _this.attributes[name].value(_this.domNode, _this.editorRegistry);
             return attributes;
         }, {});
     };
@@ -945,8 +951,8 @@ var ClassAttributor = /** @class */ (function (_super) {
                 .join('-');
         });
     };
-    ClassAttributor.prototype.add = function (node, value) {
-        if (!this.canAdd(node, value))
+    ClassAttributor.prototype.add = function (node, value, editorRegistry) {
+        if (!this.canAdd(node, value, editorRegistry))
             return false;
         this.remove(node);
         node.classList.add(this.keyName + "-" + value);
@@ -961,10 +967,10 @@ var ClassAttributor = /** @class */ (function (_super) {
             node.removeAttribute('class');
         }
     };
-    ClassAttributor.prototype.value = function (node) {
+    ClassAttributor.prototype.value = function (node, editorRegistry) {
         var result = match(node, this.keyName)[0] || '';
         var value = result.slice(this.keyName.length + 1); // +1 for hyphen
-        return this.canAdd(node, value) ? value : '';
+        return this.canAdd(node, value, editorRegistry) ? value : '';
     };
     return ClassAttributor;
 }(attributor_1.default));
@@ -1010,8 +1016,8 @@ var StyleAttributor = /** @class */ (function (_super) {
             return arr[0].trim();
         });
     };
-    StyleAttributor.prototype.add = function (node, value) {
-        if (!this.canAdd(node, value))
+    StyleAttributor.prototype.add = function (node, value, editorRegistry) {
+        if (!this.canAdd(node, value, editorRegistry))
             return false;
         node.style[camelize(this.keyName)] = value;
         return true;
@@ -1022,9 +1028,9 @@ var StyleAttributor = /** @class */ (function (_super) {
             node.removeAttribute('style');
         }
     };
-    StyleAttributor.prototype.value = function (node) {
+    StyleAttributor.prototype.value = function (node, editorRegistry) {
         var value = node.style[camelize(this.keyName)];
-        return this.canAdd(node, value) ? value : '';
+        return this.canAdd(node, value, editorRegistry) ? value : '';
     };
     return StyleAttributor;
 }(attributor_1.default));
@@ -1057,13 +1063,10 @@ var attributor_1 = __webpack_require__(1);
 var class_1 = __webpack_require__(7);
 var style_1 = __webpack_require__(8);
 var store_1 = __webpack_require__(6);
-var Registry = __webpack_require__(0);
+var registry_1 = __webpack_require__(0);
+exports.EditorRegistry = registry_1.default;
 var Parchment = {
-    Scope: Registry.Scope,
-    create: Registry.create,
-    find: Registry.find,
-    query: Registry.query,
-    register: Registry.register,
+    Scope: registry_1.Scope,
     Container: container_1.default,
     Format: format_1.default,
     Leaf: leaf_1.default,
@@ -1250,8 +1253,9 @@ var OBSERVER_CONFIG = {
 var MAX_OPTIMIZE_ITERATIONS = 100;
 var ScrollBlot = /** @class */ (function (_super) {
     __extends(ScrollBlot, _super);
-    function ScrollBlot(node) {
-        var _this = _super.call(this, node) || this;
+    function ScrollBlot(editorRegistry, node) {
+        var _this = _super.call(this, editorRegistry, node) || this;
+        _this.editorRegistry = editorRegistry;
         _this.parent = null;
         _this.scroll = _this;
         _this.observer = new MutationObserver(function (mutations) {
@@ -1325,14 +1329,14 @@ var ScrollBlot = /** @class */ (function (_super) {
                 throw new Error('[Parchment] Maximum optimize iterations reached');
             }
             remaining.forEach(function (mutation) {
-                var blot = Registry.find(mutation.target, true);
+                var blot = this.editorRegistry.find(mutation.target, true);
                 if (blot == null)
                     return;
                 if (blot.domNode === mutation.target) {
                     if (mutation.type === 'childList') {
-                        mark(Registry.find(mutation.previousSibling, false));
+                        mark(this.editorRegistry.find(mutation.previousSibling, false));
                         [].forEach.call(mutation.addedNodes, function (node) {
-                            var child = Registry.find(node, false);
+                            var child = this.editorRegistry.find(node, false);
                             mark(child, false);
                             if (child instanceof container_1.default) {
                                 child.children.forEach(function (grandChild) {
@@ -1361,7 +1365,7 @@ var ScrollBlot = /** @class */ (function (_super) {
         // TODO use WeakMap
         mutations
             .map(function (mutation) {
-            var blot = Registry.find(mutation.target, true);
+            var blot = this.editorRegistry.find(mutation.target, true);
             if (blot == null)
                 return;
             if (blot.domNode[Registry.DATA_KEY].mutations == null) {
@@ -1423,8 +1427,10 @@ function isEqual(obj1, obj2) {
 }
 var InlineBlot = /** @class */ (function (_super) {
     __extends(InlineBlot, _super);
-    function InlineBlot() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function InlineBlot(editorRegistry, domNode) {
+        var _this = _super.call(this, editorRegistry, domNode) || this;
+        _this.editorRegistry = editorRegistry;
+        return _this;
     }
     InlineBlot.formats = function (domNode) {
         if (domNode.tagName === InlineBlot.tagName)
@@ -1447,7 +1453,7 @@ var InlineBlot = /** @class */ (function (_super) {
         }
     };
     InlineBlot.prototype.formatAt = function (index, length, name, value) {
-        if (this.formats()[name] != null || Registry.query(name, Registry.Scope.ATTRIBUTE)) {
+        if (this.formats()[name] != null || this.editorRegistry.query(name, Registry.Scope.ATTRIBUTE)) {
             var blot = this.isolate(index, length);
             blot.format(name, value);
         }
@@ -1496,17 +1502,20 @@ var format_1 = __webpack_require__(3);
 var Registry = __webpack_require__(0);
 var BlockBlot = /** @class */ (function (_super) {
     __extends(BlockBlot, _super);
-    function BlockBlot() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function BlockBlot(editorRegistry, domNode) {
+        var _this = _super.call(this, editorRegistry, domNode) || this;
+        _this.editorRegistry = editorRegistry;
+        _this.editorRegistry = editorRegistry;
+        return _this;
     }
     BlockBlot.formats = function (domNode) {
-        var tagName = Registry.query(BlockBlot.blotName).tagName;
+        var tagName = this.editorRegistry.query(BlockBlot.blotName).tagName;
         if (domNode.tagName === tagName)
             return undefined;
         return _super.formats.call(this, domNode);
     };
     BlockBlot.prototype.format = function (name, value) {
-        if (Registry.query(name, Registry.Scope.BLOCK) == null) {
+        if (this.editorRegistry.query(name, Registry.Scope.BLOCK) == null) {
             return;
         }
         else if (name === this.statics.blotName && !value) {
@@ -1517,7 +1526,7 @@ var BlockBlot = /** @class */ (function (_super) {
         }
     };
     BlockBlot.prototype.formatAt = function (index, length, name, value) {
-        if (Registry.query(name, Registry.Scope.BLOCK) != null) {
+        if (this.editorRegistry.query(name, Registry.Scope.BLOCK) != null) {
             this.format(name, value);
         }
         else {
@@ -1525,13 +1534,13 @@ var BlockBlot = /** @class */ (function (_super) {
         }
     };
     BlockBlot.prototype.insertAt = function (index, value, def) {
-        if (def == null || Registry.query(value, Registry.Scope.INLINE) != null) {
+        if (def == null || this.editorRegistry.query(value, Registry.Scope.INLINE) != null) {
             // Insert text or inline
             _super.prototype.insertAt.call(this, index, value, def);
         }
         else {
             var after = this.split(index);
-            var blot = Registry.create(value, def);
+            var blot = this.editorRegistry.create(value, def);
             after.parent.insertBefore(blot, after);
         }
     };
@@ -1620,8 +1629,9 @@ var leaf_1 = __webpack_require__(4);
 var Registry = __webpack_require__(0);
 var TextBlot = /** @class */ (function (_super) {
     __extends(TextBlot, _super);
-    function TextBlot(node) {
-        var _this = _super.call(this, node) || this;
+    function TextBlot(editorRegistry, node) {
+        var _this = _super.call(this, editorRegistry, node) || this;
+        _this.editorRegistry = editorRegistry;
         _this.text = _this.statics.value(_this.domNode);
         return _this;
     }
@@ -1678,7 +1688,7 @@ var TextBlot = /** @class */ (function (_super) {
             if (index === this.length())
                 return this.next;
         }
-        var after = Registry.create(this.domNode.splitText(index));
+        var after = this.editorRegistry.create(this.domNode.splitText(index));
         this.parent.insertBefore(after, this.next);
         this.text = this.statics.value(this.domNode);
         return after;

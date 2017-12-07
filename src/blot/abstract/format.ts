@@ -3,7 +3,7 @@ import AttributorStore from '../../attributor/store';
 import { Blot, Parent, Formattable } from './blot';
 import ContainerBlot from './container';
 import ShadowBlot from './shadow';
-import * as Registry from '../../registry';
+import EditorRegistry, * as Registry from '../../registry';
 
 class FormatBlot extends ContainerBlot implements Formattable {
   protected attributes: AttributorStore;
@@ -17,13 +17,13 @@ class FormatBlot extends ContainerBlot implements Formattable {
     return undefined;
   }
 
-  constructor(domNode: Node) {
-    super(domNode);
-    this.attributes = new AttributorStore(this.domNode);
+  constructor(public editorRegistry: EditorRegistry, domNode: Node) {
+    super(editorRegistry, domNode);
+    this.attributes = new AttributorStore(editorRegistry, this.domNode);
   }
 
   format(name: string, value: any): void {
-    let format = Registry.query(name);
+    let format = this.editorRegistry.query(name);
     if (format instanceof Attributor) {
       this.attributes.attribute(format, value);
     } else if (value) {

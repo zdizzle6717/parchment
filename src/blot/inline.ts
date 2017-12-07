@@ -1,7 +1,7 @@
 import FormatBlot from './abstract/format';
 import LeafBlot from './abstract/leaf';
 import ShadowBlot from './abstract/shadow';
-import * as Registry from '../registry';
+import EditorRegistry, * as Registry from '../registry';
 
 // Shallow object comparison
 function isEqual(obj1, obj2): boolean {
@@ -22,6 +22,10 @@ class InlineBlot extends FormatBlot {
     return super.formats(domNode);
   }
 
+  constructor(public editorRegistry: EditorRegistry, domNode: Node) {
+    super(editorRegistry, domNode);
+  }
+
   format(name: string, value: any) {
     if (name === this.statics.blotName && !value) {
       this.children.forEach(child => {
@@ -37,7 +41,7 @@ class InlineBlot extends FormatBlot {
   }
 
   formatAt(index: number, length: number, name: string, value: any): void {
-    if (this.formats()[name] != null || Registry.query(name, Registry.Scope.ATTRIBUTE)) {
+    if (this.formats()[name] != null || this.editorRegistry.query(name, Registry.Scope.ATTRIBUTE)) {
       let blot = <InlineBlot>this.isolate(index, length);
       blot.format(name, value);
     } else {

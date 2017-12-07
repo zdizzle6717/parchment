@@ -2,7 +2,7 @@ import Attributor from './attributor/attributor';
 import { Blot } from './blot/abstract/blot';
 export interface BlotConstructor {
     blotName: string;
-    new (node: Node, value?: any): Blot;
+    new (editorRegistry: EditorRegistry, node: Node, value?: any): Blot;
     create(value?: any): Node;
 }
 export declare class ParchmentError extends Error {
@@ -25,7 +25,21 @@ export declare enum Scope {
     INLINE_ATTRIBUTE = 5,
     ANY = 15,
 }
-export declare function create(input: Node | string | Scope, value?: any): Blot;
-export declare function find(node: Node, bubble?: boolean): Blot;
-export declare function query(query: string | Node | Scope, scope?: Scope): Attributor | BlotConstructor;
-export declare function register(...Definitions: any[]): any;
+export default class EditorRegistry {
+    attributes: {
+        [key: string]: Attributor;
+    };
+    classes: {
+        [key: string]: BlotConstructor;
+    };
+    tags: {
+        [key: string]: BlotConstructor;
+    };
+    types: {
+        [key: string]: Attributor | BlotConstructor;
+    };
+    create(input: Node | string | Scope, value?: any): Blot;
+    find(node: Node, bubble?: boolean): Blot;
+    query(query: string | Node | Scope, scope?: Scope): Attributor | BlotConstructor;
+    register(...Definitions: any[]): any;
+}

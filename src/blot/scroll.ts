@@ -1,7 +1,7 @@
 import { Blot } from './abstract/blot';
 import ContainerBlot from './abstract/container';
 import LinkedList from '../collection/linked-list';
-import * as Registry from '../registry';
+import EditorRegistry, * as Registry from '../registry';
 
 const OBSERVER_CONFIG = {
   attributes: true,
@@ -21,8 +21,8 @@ class ScrollBlot extends ContainerBlot {
 
   observer: MutationObserver;
 
-  constructor(node: HTMLDivElement) {
-    super(node);
+  constructor(public editorRegistry: EditorRegistry, node: HTMLDivElement) {
+    super(editorRegistry, node);
     this.parent = null;
     this.scroll = this;
     this.observer = new MutationObserver((mutations: MutationRecord[]) => {
@@ -93,13 +93,13 @@ class ScrollBlot extends ContainerBlot {
         throw new Error('[Parchment] Maximum optimize iterations reached');
       }
       remaining.forEach(function(mutation) {
-        let blot = Registry.find(mutation.target, true);
+        let blot = this.editorRegistry.find(mutation.target, true);
         if (blot == null) return;
         if (blot.domNode === mutation.target) {
           if (mutation.type === 'childList') {
-            mark(Registry.find(mutation.previousSibling, false));
+            mark(this.editorRegistry.find(mutation.previousSibling, false));
             [].forEach.call(mutation.addedNodes, function(node) {
-              let child = Registry.find(node, false);
+              let child = this.editorRegistry.find(node, false);
               mark(child, false);
               if (child instanceof ContainerBlot) {
                 child.children.forEach(function(grandChild) {
@@ -125,7 +125,7 @@ class ScrollBlot extends ContainerBlot {
     // TODO use WeakMap
     mutations
       .map(function(mutation: MutationRecord) {
-        let blot = Registry.find(mutation.target, true);
+        let blot = this.editorRegistry.find(mutation.target, true);
         if (blot == null) return;
         if (blot.domNode[Registry.DATA_KEY].mutations == null) {
           blot.domNode[Registry.DATA_KEY].mutations = [mutation];

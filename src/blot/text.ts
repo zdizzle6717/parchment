@@ -1,6 +1,6 @@
 import { Blot, Leaf } from './abstract/blot';
 import LeafBlot from './abstract/leaf';
-import * as Registry from '../registry';
+import EditorRegistry, * as Registry from '../registry';
 
 class TextBlot extends LeafBlot implements Leaf {
   static blotName = 'text';
@@ -19,8 +19,8 @@ class TextBlot extends LeafBlot implements Leaf {
     return text;
   }
 
-  constructor(node: Node) {
-    super(node);
+  constructor(public editorRegistry: EditorRegistry, node: HTMLDivElement) {
+    super(editorRegistry, node);
     this.text = this.statics.value(this.domNode);
   }
 
@@ -68,7 +68,7 @@ class TextBlot extends LeafBlot implements Leaf {
       if (index === 0) return this;
       if (index === this.length()) return this.next;
     }
-    let after = Registry.create(this.domNode.splitText(index));
+    let after = this.editorRegistry.create(this.domNode.splitText(index));
     this.parent.insertBefore(after, this.next);
     this.text = this.statics.value(this.domNode);
     return after;

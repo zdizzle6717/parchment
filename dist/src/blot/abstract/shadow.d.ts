@@ -1,6 +1,7 @@
 import { Blot, Parent } from './blot';
-import * as Registry from '../../registry';
+import EditorRegistry, * as Registry from '../../registry';
 declare class ShadowBlot implements Blot {
+    editorRegistry: EditorRegistry;
     domNode: Node;
     static blotName: string;
     static className: string;
@@ -12,7 +13,7 @@ declare class ShadowBlot implements Blot {
     scroll: Parent;
     readonly statics: any;
     static create(value: any): Node;
-    constructor(domNode: Node);
+    constructor(editorRegistry: EditorRegistry, domNode: Node);
     attach(): void;
     clone(): Blot;
     detach(): void;

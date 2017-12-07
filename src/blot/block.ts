@@ -1,19 +1,26 @@
 import FormatBlot from './abstract/format';
-import * as Registry from '../registry';
+import EditorRegistry, * as Registry from '../registry';
 
 class BlockBlot extends FormatBlot {
   static blotName = 'block';
+  static editorRegistry: EditorRegistry;
   static scope = Registry.Scope.BLOCK_BLOT;
   static tagName = 'P';
 
   static formats(domNode): any {
-    let tagName = (<any>Registry.query(BlockBlot.blotName)).tagName;
+    let tagName = (<any>this.editorRegistry.query(BlockBlot.blotName)).tagName;
     if (domNode.tagName === tagName) return undefined;
     return super.formats(domNode);
   }
 
+  constructor(public editorRegistry: EditorRegistry, domNode: Node) {
+    super(editorRegistry, domNode);
+
+    this.editorRegistry = editorRegistry;
+  }
+
   format(name: string, value: any) {
-    if (Registry.query(name, Registry.Scope.BLOCK) == null) {
+    if (this.editorRegistry.query(name, Registry.Scope.BLOCK) == null) {
       return;
     } else if (name === this.statics.blotName && !value) {
       this.replaceWith(BlockBlot.blotName);
@@ -23,7 +30,7 @@ class BlockBlot extends FormatBlot {
   }
 
   formatAt(index: number, length: number, name: string, value: any): void {
-    if (Registry.query(name, Registry.Scope.BLOCK) != null) {
+    if (this.editorRegistry.query(name, Registry.Scope.BLOCK) != null) {
       this.format(name, value);
     } else {
       super.formatAt(index, length, name, value);
@@ -31,12 +38,12 @@ class BlockBlot extends FormatBlot {
   }
 
   insertAt(index: number, value: string, def?: any): void {
-    if (def == null || Registry.query(value, Registry.Scope.INLINE) != null) {
+    if (def == null || this.editorRegistry.query(value, Registry.Scope.INLINE) != null) {
       // Insert text or inline
       super.insertAt(index, value, def);
     } else {
       let after = this.split(index);
-      let blot = Registry.create(value, def);
+      let blot = this.editorRegistry.create(value, def);
       after.parent.insertBefore(blot, after);
     }
   }

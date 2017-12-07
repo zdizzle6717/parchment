@@ -1,10 +1,12 @@
 import AttributorStore from '../../attributor/store';
 import { Blot, Parent, Formattable } from './blot';
 import ContainerBlot from './container';
+import EditorRegistry from '../../registry';
 declare class FormatBlot extends ContainerBlot implements Formattable {
+    editorRegistry: EditorRegistry;
     protected attributes: AttributorStore;
     static formats(domNode: any): any;
-    constructor(domNode: Node);
+    constructor(editorRegistry: EditorRegistry, domNode: Node);
     format(name: string, value: any): void;
     formats(): {
         [index: string]: any;
