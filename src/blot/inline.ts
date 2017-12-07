@@ -17,9 +17,9 @@ class InlineBlot extends FormatBlot {
   static scope = Registry.Scope.INLINE_BLOT;
   static tagName = 'SPAN';
 
-  static formats(domNode): any {
+  static formats(domNode, editorRegistry: EditorRegistry): any {
     if (domNode.tagName === InlineBlot.tagName) return undefined;
-    return super.formats(domNode);
+    return super.formats(domNode, editorRegistry);
   }
 
   constructor(public editorRegistry: EditorRegistry, domNode: Node) {

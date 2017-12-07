@@ -7,10 +7,10 @@ class BlockBlot extends FormatBlot {
   static scope = Registry.Scope.BLOCK_BLOT;
   static tagName = 'P';
 
-  static formats(domNode): any {
-    let tagName = (<any>this.editorRegistry.query(BlockBlot.blotName)).tagName;
+  static formats(domNode, editorRegistry: EditorRegistry): any {
+    let tagName = (<any>editorRegistry.query(BlockBlot.blotName)).tagName;
     if (domNode.tagName === tagName) return undefined;
-    return super.formats(domNode);
+    return super.formats(domNode, editorRegistry);
   }
 
   constructor(public editorRegistry: EditorRegistry, domNode: Node) {

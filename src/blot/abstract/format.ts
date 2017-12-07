@@ -8,7 +8,7 @@ import EditorRegistry, * as Registry from '../../registry';
 class FormatBlot extends ContainerBlot implements Formattable {
   protected attributes: AttributorStore;
 
-  static formats(domNode): any {
+  static formats(domNode, editorRegistry): any {
     if (typeof this.tagName === 'string') {
       return true;
     } else if (Array.isArray(this.tagName)) {
@@ -35,7 +35,7 @@ class FormatBlot extends ContainerBlot implements Formattable {
 
   formats(): { [index: string]: any } {
     let formats = this.attributes.values();
-    let format = this.statics.formats(this.domNode);
+    let format = this.statics.formats(this.domNode, this.editorRegistry);
     if (format != null) {
       formats[this.statics.blotName] = format;
     }

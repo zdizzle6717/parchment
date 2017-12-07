@@ -576,7 +576,7 @@ var FormatBlot = /** @class */ (function (_super) {
         _this.attributes = new store_1.default(editorRegistry, _this.domNode);
         return _this;
     }
-    FormatBlot.formats = function (domNode) {
+    FormatBlot.formats = function (domNode, editorRegistry) {
         if (typeof this.tagName === 'string') {
             return true;
         }
@@ -598,7 +598,7 @@ var FormatBlot = /** @class */ (function (_super) {
     };
     FormatBlot.prototype.formats = function () {
         var formats = this.attributes.values();
-        var format = this.statics.formats(this.domNode);
+        var format = this.statics.formats(this.domNode, this.editorRegistry);
         if (format != null) {
             formats[this.statics.blotName] = format;
         }
@@ -1433,10 +1433,10 @@ var InlineBlot = /** @class */ (function (_super) {
         _this.editorRegistry = editorRegistry;
         return _this;
     }
-    InlineBlot.formats = function (domNode) {
+    InlineBlot.formats = function (domNode, editorRegistry) {
         if (domNode.tagName === InlineBlot.tagName)
             return undefined;
-        return _super.formats.call(this, domNode);
+        return _super.formats.call(this, domNode, editorRegistry);
     };
     InlineBlot.prototype.format = function (name, value) {
         var _this = this;
@@ -1509,11 +1509,11 @@ var BlockBlot = /** @class */ (function (_super) {
         _this.editorRegistry = editorRegistry;
         return _this;
     }
-    BlockBlot.formats = function (domNode) {
-        var tagName = this.editorRegistry.query(BlockBlot.blotName).tagName;
+    BlockBlot.formats = function (domNode, editorRegistry) {
+        var tagName = editorRegistry.query(BlockBlot.blotName).tagName;
         if (domNode.tagName === tagName)
             return undefined;
-        return _super.formats.call(this, domNode);
+        return _super.formats.call(this, domNode, editorRegistry);
     };
     BlockBlot.prototype.format = function (name, value) {
         if (this.editorRegistry.query(name, Registry.Scope.BLOCK) == null) {
