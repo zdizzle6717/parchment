@@ -14,15 +14,10 @@ import ClassAttributor from './attributor/class';
 import StyleAttributor from './attributor/style';
 import AttributorStore from './attributor/store';
 
-import * as Registry from './registry';
+import EditorRegistry, { Scope } from './registry';
 
 let Parchment = {
-  Scope: Registry.Scope,
-
-  create: Registry.create,
-  find: Registry.find,
-  query: Registry.query,
-  register: Registry.register,
+  Scope,
 
   Container: ContainerBlot,
   Format: FormatBlot,
@@ -43,4 +38,4 @@ let Parchment = {
   },
 };
 
-export default Parchment;
+export { Parchment as default, EditorRegistry };
