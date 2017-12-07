@@ -34,7 +34,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
       .reverse()
       .forEach(node => {
         try {
-          let child = makeBlot(node);
+          let child = makeBlot(node, this.editorRegistry);
           this.insertBefore(child, this.children.head);
         } catch (err) {
           if (err instanceof Registry.ParchmentError) return;
@@ -233,7 +233,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
         if (node.nextSibling != null) {
           refBlot = this.editorRegistry.find(node.nextSibling);
         }
-        let blot = makeBlot(node);
+        let blot = makeBlot(node, this.editorRegistry);
         if (blot.next != refBlot || blot.next == null) {
           if (blot.parent != null) {
             blot.parent.removeChild(this);
@@ -244,13 +244,13 @@ class ContainerBlot extends ShadowBlot implements Parent {
   }
 }
 
-function makeBlot(node): Blot {
-  let blot = this.editorRegistry.find(node);
+function makeBlot(node, editorRegistry): Blot {
+  let blot = editorRegistry.find(node);
   if (blot == null) {
     try {
-      blot = this.editorRegistry.create(node);
+      blot = editorRegistry.create(node);
     } catch (e) {
-      blot = this.editorRegistry.create(Registry.Scope.INLINE);
+      blot = editorRegistry.create(Registry.Scope.INLINE);
       [].slice.call(node.childNodes).forEach(function(child) {
         blot.domNode.appendChild(child);
       });

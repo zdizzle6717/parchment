@@ -333,7 +333,7 @@ var ContainerBlot = /** @class */ (function (_super) {
             .reverse()
             .forEach(function (node) {
             try {
-                var child = makeBlot(node);
+                var child = makeBlot(node, _this.editorRegistry);
                 _this.insertBefore(child, _this.children.head);
             }
             catch (err) {
@@ -517,7 +517,7 @@ var ContainerBlot = /** @class */ (function (_super) {
             if (node.nextSibling != null) {
                 refBlot = _this.editorRegistry.find(node.nextSibling);
             }
-            var blot = makeBlot(node);
+            var blot = makeBlot(node, _this.editorRegistry);
             if (blot.next != refBlot || blot.next == null) {
                 if (blot.parent != null) {
                     blot.parent.removeChild(_this);
@@ -528,14 +528,14 @@ var ContainerBlot = /** @class */ (function (_super) {
     };
     return ContainerBlot;
 }(shadow_1.default));
-function makeBlot(node) {
-    var blot = this.editorRegistry.find(node);
+function makeBlot(node, editorRegistry) {
+    var blot = editorRegistry.find(node);
     if (blot == null) {
         try {
-            blot = this.editorRegistry.create(node);
+            blot = editorRegistry.create(node);
         }
         catch (e) {
-            blot = this.editorRegistry.create(Registry.Scope.INLINE);
+            blot = editorRegistry.create(Registry.Scope.INLINE);
             [].slice.call(node.childNodes).forEach(function (child) {
                 blot.domNode.appendChild(child);
             });
