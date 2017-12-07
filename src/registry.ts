@@ -93,7 +93,7 @@ export default class EditorRegistry {
 
     register(...Definitions) {
       if (Definitions.length > 1) {
-        return Definitions.map(function(d) {
+        return Definitions.map((d) => {
           return this.register(d);
         });
       }
@@ -119,7 +119,7 @@ export default class EditorRegistry {
             Definition.tagName = Definition.tagName.toUpperCase();
           }
           let tagNames = Array.isArray(Definition.tagName) ? Definition.tagName : [Definition.tagName];
-          tagNames.forEach(function(tag) {
+          tagNames.forEach((tag) => {
             if (this.tags[tag] == null || Definition.className == null) {
               this.tags[tag] = Definition;
             }

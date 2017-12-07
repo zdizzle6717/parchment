@@ -177,13 +177,14 @@ var EditorRegistry = /** @class */ (function () {
         return null;
     };
     EditorRegistry.prototype.register = function () {
+        var _this = this;
         var Definitions = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             Definitions[_i] = arguments[_i];
         }
         if (Definitions.length > 1) {
             return Definitions.map(function (d) {
-                return this.register(d);
+                return _this.register(d);
             });
         }
         var Definition = Definitions[0];
@@ -212,8 +213,8 @@ var EditorRegistry = /** @class */ (function () {
                 }
                 var tagNames = Array.isArray(Definition.tagName) ? Definition.tagName : [Definition.tagName];
                 tagNames.forEach(function (tag) {
-                    if (this.tags[tag] == null || Definition.className == null) {
-                        this.tags[tag] = Definition;
+                    if (_this.tags[tag] == null || Definition.className == null) {
+                        _this.tags[tag] = Definition;
                     }
                 });
             }
