@@ -92,13 +92,13 @@ class ScrollBlot extends ContainerBlot {
       if (i >= MAX_OPTIMIZE_ITERATIONS) {
         throw new Error('[Parchment] Maximum optimize iterations reached');
       }
-      remaining.forEach(function(mutation) {
+      remaining.forEach((mutation) => {
         let blot = this.editorRegistry.find(mutation.target, true);
         if (blot == null) return;
         if (blot.domNode === mutation.target) {
           if (mutation.type === 'childList') {
             mark(this.editorRegistry.find(mutation.previousSibling, false));
-            [].forEach.call(mutation.addedNodes, function(node) {
+            [].forEach.call(mutation.addedNodes, (node) => {
               let child = this.editorRegistry.find(node, false);
               mark(child, false);
               if (child instanceof ContainerBlot) {
@@ -124,7 +124,7 @@ class ScrollBlot extends ContainerBlot {
     mutations = mutations || this.observer.takeRecords();
     // TODO use WeakMap
     mutations
-      .map(function(mutation: MutationRecord) {
+      .map((mutation: MutationRecord) => {
         let blot = this.editorRegistry.find(mutation.target, true);
         if (blot == null) return;
         if (blot.domNode[Registry.DATA_KEY].mutations == null) {

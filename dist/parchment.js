@@ -1330,14 +1330,14 @@ var ScrollBlot = /** @class */ (function (_super) {
                 throw new Error('[Parchment] Maximum optimize iterations reached');
             }
             remaining.forEach(function (mutation) {
-                var blot = this.editorRegistry.find(mutation.target, true);
+                var blot = _this.editorRegistry.find(mutation.target, true);
                 if (blot == null)
                     return;
                 if (blot.domNode === mutation.target) {
                     if (mutation.type === 'childList') {
-                        mark(this.editorRegistry.find(mutation.previousSibling, false));
+                        mark(_this.editorRegistry.find(mutation.previousSibling, false));
                         [].forEach.call(mutation.addedNodes, function (node) {
-                            var child = this.editorRegistry.find(node, false);
+                            var child = _this.editorRegistry.find(node, false);
                             mark(child, false);
                             if (child instanceof container_1.default) {
                                 child.children.forEach(function (grandChild) {
@@ -1366,7 +1366,7 @@ var ScrollBlot = /** @class */ (function (_super) {
         // TODO use WeakMap
         mutations
             .map(function (mutation) {
-            var blot = this.editorRegistry.find(mutation.target, true);
+            var blot = _this.editorRegistry.find(mutation.target, true);
             if (blot == null)
                 return;
             if (blot.domNode[Registry.DATA_KEY].mutations == null) {
