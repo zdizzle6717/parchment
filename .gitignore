@@ -1,3 +1,4 @@
+.editorconfig
 /.build
 #/dist
 /node_modules
