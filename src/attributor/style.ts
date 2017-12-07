@@ -1,4 +1,5 @@
 import Attributor from './attributor';
+import EditorRegistry from '../registry';
 
 function camelize(name: string): string {
   let parts = name.split('-');
@@ -19,8 +20,8 @@ class StyleAttributor extends Attributor {
     });
   }
 
-  add(node: HTMLElement, value: string): boolean {
-    if (!this.canAdd(node, value)) return false;
+  add(node: HTMLElement, value: string, editorRegistry: EditorRegistry): boolean {
+    if (!this.canAdd(node, value, editorRegistry)) return false;
     node.style[camelize(this.keyName)] = value;
     return true;
   }
@@ -32,9 +33,9 @@ class StyleAttributor extends Attributor {
     }
   }
 
-  value(node: HTMLElement): string {
+  value(node: HTMLElement, editorRegistry: EditorRegistry): string {
     let value = node.style[camelize(this.keyName)];
-    return this.canAdd(node, value) ? value : '';
+    return this.canAdd(node, value, editorRegistry) ? value : '';
   }
 }
 

@@ -1,4 +1,4 @@
-import * as Registry from '../registry';
+import EditorRegistry, * as Registry from '../registry';
 
 export interface AttributorOptions {
   scope?: Registry.Scope;
@@ -30,14 +30,14 @@ export default class Attributor {
     if (options.whitelist != null) this.whitelist = options.whitelist;
   }
 
-  add(node: HTMLElement, value: string): boolean {
-    if (!this.canAdd(node, value)) return false;
+  add(node: HTMLElement, value: string, editorRegistry: EditorRegistry): boolean {
+    if (!this.canAdd(node, value, editorRegistry)) return false;
     node.setAttribute(this.keyName, value);
     return true;
   }
 
-  canAdd(node: HTMLElement, value: any): boolean {
-    let match = Registry.query(node, Registry.Scope.BLOT & (this.scope | Registry.Scope.TYPE));
+  canAdd(node: HTMLElement, value: any, editorRegistry: EditorRegistry): boolean {
+    let match = editorRegistry.query(node, Registry.Scope.BLOT & (this.scope | Registry.Scope.TYPE));
     if (match == null) return false;
     if (this.whitelist == null) return true;
     if (typeof value === 'string') {
@@ -51,8 +51,8 @@ export default class Attributor {
     node.removeAttribute(this.keyName);
   }
 
-  value(node: HTMLElement): string {
+  value(node: HTMLElement, editorRegistry: EditorRegistry): string {
     let value = node.getAttribute(this.keyName);
-    return this.canAdd(node, value) ? value : '';
+    return this.canAdd(node, value, editorRegistry, ) ? value : '';
   }
 }

@@ -2,22 +2,24 @@ import Attributor from './attributor';
 import ClassAttributor from './class';
 import StyleAttributor from './style';
 import { Formattable } from '../blot/abstract/blot';
-import * as Registry from '../registry';
+import EditorRegistry, * as Registry from '../registry';
 
 class AttributorStore {
   private attributes: { [key: string]: Attributor } = {};
   private domNode: HTMLElement;
+  private editorRegistry: EditorRegistry;
 
-  constructor(domNode: HTMLElement) {
+  constructor(editorRegistry: EditorRegistry, domNode: HTMLElement) {
     this.domNode = domNode;
+    this.editorRegistry = editorRegistry;
     this.build();
   }
 
   attribute(attribute: Attributor, value: any): void {
     // verb
     if (value) {
-      if (attribute.add(this.domNode, value)) {
-        if (attribute.value(this.domNode) != null) {
+      if (attribute.add(this.domNode, value, this.editorRegistry)) {
+        if (attribute.value(this.domNode, this.editorRegistry) != null) {
           this.attributes[attribute.attrName] = attribute;
         } else {
           delete this.attributes[attribute.attrName];
@@ -38,7 +40,7 @@ class AttributorStore {
       .concat(classes)
       .concat(styles)
       .forEach(name => {
-        let attr = Registry.query(name, Registry.Scope.ATTRIBUTE);
+        let attr = this.editorRegistry.query(name, Registry.Scope.ATTRIBUTE);
         if (attr instanceof Attributor) {
           this.attributes[attr.attrName] = attr;
         }
@@ -47,7 +49,7 @@ class AttributorStore {
 
   copy(target: Formattable): void {
     Object.keys(this.attributes).forEach(key => {
-      let value = this.attributes[key].value(this.domNode);
+      let value = this.attributes[key].value(this.domNode, this.editorRegistry);
       target.format(key, value);
     });
   }
@@ -62,7 +64,7 @@ class AttributorStore {
 
   values(): Object {
     return Object.keys(this.attributes).reduce((attributes, name) => {
-      attributes[name] = this.attributes[name].value(this.domNode);
+      attributes[name] = this.attributes[name].value(this.domNode, this.editorRegistry);
       return attributes;
     }, {});
   }

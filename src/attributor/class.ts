@@ -1,4 +1,5 @@
 import Attributor from './attributor';
+import EditorRegistry from '../registry';
 
 function match(node: HTMLElement, prefix: string): string[] {
   let className = node.getAttribute('class') || '';
@@ -17,8 +18,8 @@ class ClassAttributor extends Attributor {
     });
   }
 
-  add(node: HTMLElement, value: string): boolean {
-    if (!this.canAdd(node, value)) return false;
+  add(node: HTMLElement, value: string, editorRegistry: EditorRegistry): boolean {
+    if (!this.canAdd(node, value, editorRegistry)) return false;
     this.remove(node);
     node.classList.add(`${this.keyName}-${value}`);
     return true;
@@ -34,10 +35,10 @@ class ClassAttributor extends Attributor {
     }
   }
 
-  value(node: HTMLElement): string {
+  value(node: HTMLElement, editorRegistry: EditorRegistry): string {
     let result = match(node, this.keyName)[0] || '';
     let value = result.slice(this.keyName.length + 1); // +1 for hyphen
-    return this.canAdd(node, value) ? value : '';
+    return this.canAdd(node, value, editorRegistry) ? value : '';
   }
 }
 

@@ -1,4 +1,4 @@
-import * as Registry from '../registry';
+import EditorRegistry, * as Registry from '../registry';
 export interface AttributorOptions {
     scope?: Registry.Scope;
     whitelist?: string[];
@@ -10,8 +10,8 @@ export default class Attributor {
     whitelist: string[];
     static keys(node: HTMLElement): string[];
     constructor(attrName: string, keyName: string, options?: AttributorOptions);
-    add(node: HTMLElement, value: string): boolean;
-    canAdd(node: HTMLElement, value: any): boolean;
+    add(node: HTMLElement, value: string, editorRegistry: EditorRegistry): boolean;
+    canAdd(node: HTMLElement, value: any, editorRegistry: EditorRegistry): boolean;
     remove(node: HTMLElement): void;
-    value(node: HTMLElement): string;
+    value(node: HTMLElement, editorRegistry: EditorRegistry): string;
 }
