@@ -16,4 +16,4 @@ class ScriptBlot extends InlineBlot {}
 ScriptBlot.blotName = 'script';
 ScriptBlot.tagName = ['sup', 'sub'];
 
-Registry.register(AuthorBlot, BoldBlot, ItalicBlot, ScriptBlot);
+EditorRegistry.register(AuthorBlot, BoldBlot, ItalicBlot, ScriptBlot);

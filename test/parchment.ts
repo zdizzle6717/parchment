@@ -15,8 +15,10 @@ import TextBlot from '../src/blot/text';
 
 import LinkedList from '../src/collection/linked-list';
 
-import * as Registry from '../src/registry';
+import EditorRegistry, * as Registry from '../src/registry';
 import Parchment from '../src/parchment';
+
+const TestingRegistry = new EditorRegistry();
 
 window['Attributor'] = Attributor;
 window['ClassAttributor'] = ClassAttributor;
@@ -37,8 +39,9 @@ window['LinkedList'] = LinkedList;
 
 window['Parchment'] = Parchment;
 window['Registry'] = Registry;
+window['EditorRegistry'] = TestingRegistry;
 
-Registry.register(ScrollBlot);
-Registry.register(BlockBlot);
-Registry.register(InlineBlot);
-Registry.register(TextBlot);
+TestingRegistry.register(ScrollBlot);
+TestingRegistry.register(BlockBlot);
+TestingRegistry.register(InlineBlot);
+TestingRegistry.register(TextBlot);

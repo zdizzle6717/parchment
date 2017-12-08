@@ -3,8 +3,8 @@
 describe('Block', function() {
   describe('format', function() {
     it('add', function() {
-      let container = Registry.create('scroll');
-      let block = Registry.create('block');
+      let container = EditorRegistry.create('scroll');
+      let block = EditorRegistry.create('block');
       container.appendChild(block);
       block.format('header', 'h1');
       expect(container.domNode.innerHTML).toBe('<h1></h1>');
@@ -13,8 +13,8 @@ describe('Block', function() {
     });
 
     it('remove', function() {
-      let container = Registry.create('scroll');
-      let block = Registry.create('header', 'h1');
+      let container = EditorRegistry.create('scroll');
+      let block = EditorRegistry.create('header', 'h1');
       container.appendChild(block);
       block.format('header', false);
       expect(container.domNode.innerHTML).toBe('<p></p>');
@@ -23,9 +23,9 @@ describe('Block', function() {
     });
 
     it('change', function() {
-      let container = Registry.create('scroll');
-      let block = Registry.create('block');
-      let text = Registry.create('text', 'Test');
+      let container = EditorRegistry.create('scroll');
+      let block = EditorRegistry.create('block');
+      let text = EditorRegistry.create('text', 'Test');
       block.appendChild(text);
       container.appendChild(block);
       block.format('header', 'h2');
@@ -37,9 +37,9 @@ describe('Block', function() {
     });
 
     it('split', function() {
-      let container = Registry.create('scroll');
-      let block = Registry.create('block');
-      let text = Registry.create('text', 'Test');
+      let container = EditorRegistry.create('scroll');
+      let block = EditorRegistry.create('block');
+      let text = EditorRegistry.create('text', 'Test');
       block.appendChild(text);
       container.appendChild(block);
       let src = 'http://www.w3schools.com/html/mov_bbb.mp4';
@@ -50,8 +50,8 @@ describe('Block', function() {
     });
 
     it('ignore inline', function() {
-      let container = Registry.create('scroll');
-      let block = Registry.create('header', 1);
+      let container = EditorRegistry.create('scroll');
+      let block = EditorRegistry.create('header', 1);
       container.appendChild(block);
       block.format('bold', true);
       expect(container.domNode.innerHTML).toBe('<h1></h1>');

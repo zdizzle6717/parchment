@@ -5,7 +5,7 @@ describe('Scroll', function() {
     let containerNode = document.createElement('div');
     containerNode.innerHTML =
       '<p><strong>012</strong><span>34</span><em><strong>5678</strong></em></p>';
-    this.container = Registry.create(containerNode);
+    this.container = EditorRegistry.create(containerNode);
   });
 
   describe('path()', function() {
@@ -58,7 +58,7 @@ describe('Scroll', function() {
   });
 
   it('detach', function(done) {
-    let scroll = Registry.create('scroll');
+    let scroll = EditorRegistry.create('scroll');
     spyOn(scroll, 'optimize').and.callThrough();
     scroll.domNode.innerHTML = 'Test';
     setTimeout(function() {
@@ -81,7 +81,7 @@ describe('Scroll', function() {
     });
 
     it('api change', function() {
-      const blot = Registry.create('text', 'Test');
+      const blot = EditorRegistry.create('text', 'Test');
       this.container.appendChild(blot);
       expect(blot.scroll).toEqual(this.container);
     });

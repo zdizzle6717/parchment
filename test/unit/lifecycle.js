@@ -11,21 +11,21 @@ describe('Lifecycle', function() {
     it('array tagName index', function() {
       let node = HeaderBlot.create(2);
       expect(node).toBeTruthy();
-      let blot = Registry.create(node);
+      let blot = EditorRegistry.create(node);
       expect(blot.formats()).toEqual({ header: 'h2' });
     });
 
     it('array tagName value', function() {
       let node = HeaderBlot.create('h2');
       expect(node).toBeTruthy();
-      let blot = Registry.create(node);
+      let blot = EditorRegistry.create(node);
       expect(blot.formats()).toEqual({ header: 'h2' });
     });
 
     it('array tagName default', function() {
       let node = HeaderBlot.create();
       expect(node).toBeTruthy();
-      let blot = Registry.create(node);
+      let blot = EditorRegistry.create(node);
       expect(blot.formats()).toEqual({ header: 'h1' });
     });
 
@@ -49,8 +49,8 @@ describe('Lifecycle', function() {
     it('unwrap empty inline', function() {
       let node = document.createElement('div');
       node.innerHTML = '<p><span style="color: red;"><strong>Te</strong><em>st</em></span></p>';
-      let container = Registry.create(node);
-      let span = Registry.find(node.querySelector('span'));
+      let container = EditorRegistry.create(node);
+      let span = EditorRegistry.find(node.querySelector('span'));
       span.format('color', false);
       container.optimize();
       expect(node.innerHTML).toEqual('<p><strong>Te</strong><em>st</em></p>');
@@ -59,8 +59,8 @@ describe('Lifecycle', function() {
     it('unwrap recursive', function() {
       let node = document.createElement('div');
       node.innerHTML = '<p><em><strong>Test</strong></em></p>';
-      let container = Registry.create(node);
-      let text = Registry.find(node.querySelector('strong').firstChild);
+      let container = EditorRegistry.create(node);
+      let text = EditorRegistry.find(node.querySelector('strong').firstChild);
       text.deleteAt(0, 4);
       container.optimize();
       expect(node.innerHTML).toEqual('');
@@ -69,8 +69,8 @@ describe('Lifecycle', function() {
     it('format merge', function() {
       let node = document.createElement('div');
       node.innerHTML = '<p><strong>T</strong>es<strong>t</strong></p>';
-      let container = Registry.create(node);
-      let text = Registry.find(node.firstChild.childNodes[1]);
+      let container = EditorRegistry.create(node);
+      let text = EditorRegistry.find(node.firstChild.childNodes[1]);
       text.formatAt(0, 2, 'bold', true);
       container.optimize();
       expect(node.innerHTML).toEqual('<p><strong>Test</strong></p>');
@@ -81,8 +81,8 @@ describe('Lifecycle', function() {
       let node = document.createElement('div');
       node.innerHTML =
         '<p><em><strong>T</strong></em><strong>es</strong><em><strong>t</strong></em></p>';
-      let container = Registry.create(node);
-      let target = Registry.find(node.firstChild.childNodes[1]);
+      let container = EditorRegistry.create(node);
+      let target = EditorRegistry.find(node.firstChild.childNodes[1]);
       target.wrap('italic', true);
       container.optimize();
       expect(node.innerHTML).toEqual('<p><em><strong>Test</strong></em></p>');
@@ -92,8 +92,8 @@ describe('Lifecycle', function() {
     it('remove format merge', function() {
       let node = document.createElement('div');
       node.innerHTML = '<p><strong>T</strong><em><strong>es</strong></em><strong>t</strong></p>';
-      let container = Registry.create(node);
-      let paragraph = Registry.find(node.querySelector('p'));
+      let container = EditorRegistry.create(node);
+      let paragraph = EditorRegistry.find(node.querySelector('p'));
       paragraph.formatAt(1, 2, 'italic', false);
       container.optimize();
       expect(node.innerHTML).toEqual('<p><strong>Test</strong></p>');
@@ -103,8 +103,8 @@ describe('Lifecycle', function() {
     it('remove attribute merge', function() {
       let node = document.createElement('div');
       node.innerHTML = '<p><em>T</em><em style="color: red;">es</em><em>t</em></p>';
-      let container = Registry.create(node);
-      let paragraph = Registry.find(node.querySelector('p'));
+      let container = EditorRegistry.create(node);
+      let paragraph = EditorRegistry.find(node.querySelector('p'));
       paragraph.formatAt(1, 2, 'color', false);
       container.optimize();
       expect(node.innerHTML).toEqual('<p><em>Test</em></p>');
@@ -114,8 +114,8 @@ describe('Lifecycle', function() {
     it('format no merge attribute mismatch', function() {
       let node = document.createElement('div');
       node.innerHTML = '<p><strong>Te</strong><em><strong style="color: red;">st</strong></em></p>';
-      let container = Registry.create(node);
-      let paragraph = Registry.find(node.querySelector('p'));
+      let container = EditorRegistry.create(node);
+      let paragraph = EditorRegistry.find(node.querySelector('p'));
       paragraph.formatAt(2, 2, 'italic', false);
       container.optimize();
       expect(node.innerHTML).toEqual(
@@ -126,8 +126,8 @@ describe('Lifecycle', function() {
     it('delete + merge', function() {
       let node = document.createElement('div');
       node.innerHTML = '<p><em>T</em>es<em>t</em></p>';
-      let container = Registry.create(node);
-      let paragraph = Registry.find(node.querySelector('p'));
+      let container = EditorRegistry.create(node);
+      let paragraph = EditorRegistry.find(node.querySelector('p'));
       paragraph.deleteAt(1, 2);
       container.optimize();
       expect(node.innerHTML).toEqual('<p><em>Tt</em></p>');
@@ -138,8 +138,8 @@ describe('Lifecycle', function() {
       let node = document.createElement('div');
       node.innerHTML =
         '<p><strong>T</strong><em style="color: red;"><strong>es</strong></em><strong>t</strong></p>';
-      let container = Registry.create(node);
-      let paragraph = Registry.find(node.querySelector('p'));
+      let container = EditorRegistry.create(node);
+      let paragraph = EditorRegistry.find(node.querySelector('p'));
       container.formatAt(1, 2, 'italic', false);
       container.formatAt(1, 2, 'color', false);
       container.optimize();
@@ -150,7 +150,7 @@ describe('Lifecycle', function() {
     it('remove text + recursive merge', function() {
       let node = document.createElement('div');
       node.innerHTML = '<p><em>Te</em>|<em>st</em></p>';
-      let container = Registry.create(node);
+      let container = EditorRegistry.create(node);
       node.firstChild.childNodes[1].data = '';
       container.optimize();
       expect(node.innerHTML).toEqual('<p><em>Test</em></p>');
@@ -159,7 +159,7 @@ describe('Lifecycle', function() {
 
     it('insert default child', function() {
       HeaderBlot.defaultChild = 'image';
-      let blot = Registry.create('header');
+      let blot = EditorRegistry.create('header');
       expect(blot.domNode.innerHTML).toEqual('');
       blot.optimize();
       HeaderBlot.defaultChild = undefined;
@@ -172,7 +172,7 @@ describe('Lifecycle', function() {
       let div = document.createElement('div');
       div.innerHTML =
         '<p><em style="color: red;"><strong>Test</strong><img>ing</em></p><p><em>!</em></p>';
-      this.container = Registry.create(div);
+      this.container = EditorRegistry.create(div);
       // [p, em, strong, text, image, text, p, em, text]
       this.descendants = this.container.descendants(ShadowBlot);
       this.descendants.forEach(function(blot) {

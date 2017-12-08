@@ -24,4 +24,4 @@ let Indent = new ClassAttributor('indent', 'indent', {
   scope: Registry.Scope.BLOCK_ATTRIBUTE,
 });
 
-Registry.register(Color, Size, Family, Id, Align, Indent);
+EditorRegistry.register(Color, Size, Family, Id, Align, Indent);

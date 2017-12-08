@@ -67,5 +67,5 @@ VideoBlot.blotName = 'video';
 VideoBlot.scope = Registry.Scope.BLOCK_BLOT;
 VideoBlot.tagName = 'VIDEO';
 
-Registry.register(ImageBlot);
-Registry.register(VideoBlot);
+EditorRegistry.register(ImageBlot);
+EditorRegistry.register(VideoBlot);

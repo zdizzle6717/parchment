@@ -4,22 +4,22 @@ describe('Blot', function() {
   it('offset()', function() {
     let blockNode = document.createElement('p');
     blockNode.innerHTML = '<span>01</span><em>23<strong>45</strong></em>';
-    let blockBlot = Registry.create(blockNode);
+    let blockBlot = EditorRegistry.create(blockNode);
     let boldBlot = blockBlot.children.tail.children.tail;
     expect(boldBlot.offset()).toEqual(2);
     expect(boldBlot.offset(blockBlot)).toEqual(4);
   });
 
   it('detach()', function() {
-    let blot = Registry.create('block');
+    let blot = EditorRegistry.create('block');
     expect(blot.domNode[Registry.DATA_KEY]).toEqual({ blot: blot });
     blot.detach();
     expect(blot.domNode[Registry.DATA_KEY]).toEqual(undefined);
   });
 
   it('remove()', function() {
-    let blot = Registry.create('block');
-    let text = Registry.create('text', 'Test');
+    let blot = EditorRegistry.create('block');
+    let text = EditorRegistry.create('text', 'Test');
     blot.appendChild(text);
     expect(blot.children.head).toBe(text);
     expect(blot.domNode.innerHTML).toBe('Test');
@@ -29,10 +29,10 @@ describe('Blot', function() {
   });
 
   it('wrap()', function() {
-    let parent = Registry.create('block');
-    let head = Registry.create('bold');
-    let text = Registry.create('text', 'Test');
-    let tail = Registry.create('bold');
+    let parent = EditorRegistry.create('block');
+    let head = EditorRegistry.create('bold');
+    let text = EditorRegistry.create('text', 'Test');
+    let tail = EditorRegistry.create('bold');
     parent.appendChild(head);
     parent.appendChild(text);
     parent.appendChild(tail);
@@ -45,9 +45,9 @@ describe('Blot', function() {
   });
 
   it('wrap() with blot', function() {
-    let parent = Registry.create('block');
-    let text = Registry.create('text', 'Test');
-    let italic = Registry.create('italic');
+    let parent = EditorRegistry.create('block');
+    let text = EditorRegistry.create('text', 'Test');
+    let italic = EditorRegistry.create('italic');
     parent.appendChild(text);
     text.wrap(italic);
     expect(parent.domNode.innerHTML).toEqual('<em>Test</em>');
