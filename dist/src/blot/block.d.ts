@@ -6,7 +6,7 @@ declare class BlockBlot extends FormatBlot {
     static editorRegistry: EditorRegistry;
     static scope: Registry.Scope;
     static tagName: string;
-    static formats(domNode: any, editorRegistry: EditorRegistry): any;
+    static formats(domNode: HTMLElement, editorRegistry: EditorRegistry): any;
     constructor(editorRegistry: EditorRegistry, domNode: Node);
     format(name: string, value: any): void;
     formatAt(index: number, length: number, name: string, value: any): void;

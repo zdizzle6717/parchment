@@ -11,7 +11,7 @@ declare class TextBlot extends LeafBlot implements Leaf {
     static value(domNode: Text): string;
     constructor(editorRegistry: EditorRegistry, node: HTMLDivElement);
     deleteAt(index: number, length: number): void;
-    index(node: any, offset: any): number;
+    index(node: Node, offset: number): number;
     insertAt(index: number, value: string, def?: any): void;
     length(): number;
     optimize(context: {

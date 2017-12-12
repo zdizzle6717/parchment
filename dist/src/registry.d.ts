@@ -9,7 +9,7 @@ export declare class ParchmentError extends Error {
     message: string;
     name: string;
     stack: string;
-    constructor(message: any);
+    constructor(message: string);
 }
 export declare const DATA_KEY = "__blot";
 export declare enum Scope {
@@ -39,7 +39,7 @@ export default class EditorRegistry {
         [key: string]: Attributor | BlotConstructor;
     };
     create(input: Node | string | Scope, value?: any): Blot;
-    find(node: Node, bubble?: boolean): Blot;
-    query(query: string | Node | Scope, scope?: Scope): Attributor | BlotConstructor;
+    find(node: Node | null, bubble?: boolean): Blot | null;
+    query(query: string | Node | Scope, scope?: Scope): Attributor | BlotConstructor | null;
     register(...Definitions: any[]): any;
 }

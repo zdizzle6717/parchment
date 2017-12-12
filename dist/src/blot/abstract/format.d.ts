@@ -5,7 +5,7 @@ import EditorRegistry from '../../registry';
 declare class FormatBlot extends ContainerBlot implements Formattable {
     editorRegistry: EditorRegistry;
     protected attributes: AttributorStore;
-    static formats(domNode: any, editorRegistry: any): any;
+    static formats(domNode: HTMLElement, editorRegistry: EditorRegistry): any;
     constructor(editorRegistry: EditorRegistry, domNode: Node);
     format(name: string, value: any): void;
     formats(): {

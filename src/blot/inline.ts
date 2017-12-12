@@ -4,9 +4,11 @@ import ShadowBlot from './abstract/shadow';
 import EditorRegistry, * as Registry from '../registry';
 
 // Shallow object comparison
-function isEqual(obj1, obj2): boolean {
+function isEqual(obj1: Object, obj2: Object): boolean {
   if (Object.keys(obj1).length !== Object.keys(obj2).length) return false;
+  // @ts-ignore
   for (let prop in obj1) {
+    // @ts-ignore
     if (obj1[prop] !== obj2[prop]) return false;
   }
   return true;
@@ -17,7 +19,7 @@ class InlineBlot extends FormatBlot {
   static scope = Registry.Scope.INLINE_BLOT;
   static tagName = 'SPAN';
 
-  static formats(domNode, editorRegistry: EditorRegistry): any {
+  static formats(domNode: HTMLElement, editorRegistry: EditorRegistry): any {
     if (domNode.tagName === InlineBlot.tagName) return undefined;
     return super.formats(domNode, editorRegistry);
   }

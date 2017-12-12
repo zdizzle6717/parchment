@@ -131,13 +131,16 @@ var EditorRegistry = /** @class */ (function () {
             throw new ParchmentError("Unable to create " + input + " blot");
         }
         var BlotClass = match;
-        var node = input instanceof Node || input['nodeType'] === Node.TEXT_NODE ? input : BlotClass.create(value);
+        var node = 
+        // @ts-ignore
+        input instanceof Node || input['nodeType'] === Node.TEXT_NODE ? input : BlotClass.create(value);
         return new BlotClass(this, node, value);
     };
     EditorRegistry.prototype.find = function (node, bubble) {
         if (bubble === void 0) { bubble = false; }
         if (node == null)
             return null;
+        // @ts-ignore
         if (node[exports.DATA_KEY] != null)
             return node[exports.DATA_KEY].blot;
         if (bubble)
@@ -149,6 +152,7 @@ var EditorRegistry = /** @class */ (function () {
         var match;
         if (typeof query === 'string') {
             match = this.types[query] || this.attributes[query];
+            // @ts-ignore
         }
         else if (query instanceof Text || query['nodeType'] === Node.TEXT_NODE) {
             match = this.types['text'];
@@ -172,6 +176,7 @@ var EditorRegistry = /** @class */ (function () {
         }
         if (match == null)
             return null;
+        // @ts-ignore
         if (scope & Scope.LEVEL & match.scope && scope & Scope.TYPE & match.scope)
             return match;
         return null;
@@ -280,7 +285,10 @@ var Attributor = /** @class */ (function () {
     };
     Attributor.prototype.value = function (node, editorRegistry) {
         var value = node.getAttribute(this.keyName);
-        return this.canAdd(node, value, editorRegistry) ? value : '';
+        if (this.canAdd(node, value, editorRegistry) && value) {
+            return value;
+        }
+        return '';
     };
     return Attributor;
 }());
@@ -334,7 +342,7 @@ var ContainerBlot = /** @class */ (function (_super) {
             .forEach(function (node) {
             try {
                 var child = makeBlot(node, _this.editorRegistry);
-                _this.insertBefore(child, _this.children.head);
+                _this.insertBefore(child, _this.children.head || undefined);
             }
             catch (err) {
                 if (err instanceof Registry.ParchmentError)
@@ -368,7 +376,8 @@ var ContainerBlot = /** @class */ (function (_super) {
     ContainerBlot.prototype.descendants = function (criteria, index, length) {
         if (index === void 0) { index = 0; }
         if (length === void 0) { length = Number.MAX_VALUE; }
-        var descendants = [], lengthLeft = length;
+        var descendants = [];
+        var lengthLeft = length;
         this.children.forEachAt(index, length, function (child, index, length) {
             if ((criteria.blotName == null && criteria(child)) ||
                 (criteria.blotName != null && child instanceof criteria)) {
@@ -477,7 +486,8 @@ var ContainerBlot = /** @class */ (function (_super) {
     };
     ContainerBlot.prototype.update = function (mutations, context) {
         var _this = this;
-        var addedNodes = [], removedNodes = [];
+        var addedNodes = [];
+        var removedNodes = [];
         mutations.forEach(function (mutation) {
             if (mutation.target === _this.domNode && mutation.type === 'childList') {
                 addedNodes.push.apply(addedNodes, mutation.addedNodes);
@@ -489,6 +499,7 @@ var ContainerBlot = /** @class */ (function (_super) {
             // One exception is Chrome does not immediately remove IFRAMEs
             // from DOM but MutationRecord is correct in its reported removal
             if (node.parentNode != null &&
+                // @ts-ignore
                 node.tagName !== 'IFRAME' &&
                 document.body.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_CONTAINED_BY) {
                 return;
@@ -522,7 +533,7 @@ var ContainerBlot = /** @class */ (function (_super) {
                 if (blot.parent != null) {
                     blot.parent.removeChild(_this);
                 }
-                _this.insertBefore(blot, refBlot);
+                _this.insertBefore(blot, refBlot || undefined);
             }
         });
     };
@@ -537,9 +548,12 @@ function makeBlot(node, editorRegistry) {
         catch (e) {
             blot = editorRegistry.create(Registry.Scope.INLINE);
             [].slice.call(node.childNodes).forEach(function (child) {
+                // @ts-ignore
                 blot.domNode.appendChild(child);
             });
-            node.parentNode.replaceChild(blot.domNode, node);
+            if (node.parentNode) {
+                node.parentNode.replaceChild(blot.domNode, node);
+            }
             blot.attach();
         }
     }
@@ -692,6 +706,7 @@ var ShadowBlot = /** @class */ (function () {
     function ShadowBlot(editorRegistry, domNode) {
         this.editorRegistry = editorRegistry;
         this.domNode = domNode;
+        // @ts-ignore
         this.domNode[Registry.DATA_KEY] = { blot: this };
     }
     Object.defineProperty(ShadowBlot.prototype, "statics", {
@@ -744,6 +759,7 @@ var ShadowBlot = /** @class */ (function () {
     ShadowBlot.prototype.detach = function () {
         if (this.parent != null)
             this.parent.removeChild(this);
+        // @ts-ignore
         delete this.domNode[Registry.DATA_KEY];
     };
     ShadowBlot.prototype.deleteAt = function (index, length) {
@@ -767,15 +783,17 @@ var ShadowBlot = /** @class */ (function () {
         this.parent.insertBefore(blot, ref);
     };
     ShadowBlot.prototype.insertInto = function (parentBlot, refBlot) {
+        if (refBlot === void 0) { refBlot = null; }
         if (this.parent != null) {
             this.parent.children.remove(this);
         }
+        var refDomNode = null;
         parentBlot.children.insertBefore(this, refBlot);
         if (refBlot != null) {
-            var refDomNode = refBlot.domNode;
+            refDomNode = refBlot.domNode;
         }
         if (this.next == null || this.domNode.nextSibling != refDomNode) {
-            parentBlot.domNode.insertBefore(this.domNode, typeof refDomNode !== 'undefined' ? refDomNode : null);
+            parentBlot.domNode.insertBefore(this.domNode, refDomNode);
         }
         this.parent = parentBlot;
         this.attach();
@@ -796,7 +814,9 @@ var ShadowBlot = /** @class */ (function () {
     };
     ShadowBlot.prototype.optimize = function (context) {
         // TODO clean up once we use WeakMap
+        // @ts-ignore
         if (this.domNode[Registry.DATA_KEY] != null) {
+            // @ts-ignore
             delete this.domNode[Registry.DATA_KEY].mutations;
         }
     };
@@ -1020,16 +1040,19 @@ var StyleAttributor = /** @class */ (function (_super) {
     StyleAttributor.prototype.add = function (node, value, editorRegistry) {
         if (!this.canAdd(node, value, editorRegistry))
             return false;
+        // @ts-ignore
         node.style[camelize(this.keyName)] = value;
         return true;
     };
     StyleAttributor.prototype.remove = function (node) {
+        // @ts-ignore
         node.style[camelize(this.keyName)] = '';
         if (!node.getAttribute('style')) {
             node.removeAttribute('style');
         }
     };
     StyleAttributor.prototype.value = function (node, editorRegistry) {
+        // @ts-ignore
         var value = node.style[camelize(this.keyName)];
         return this.canAdd(node, value, editorRegistry) ? value : '';
     };
@@ -1095,7 +1118,7 @@ exports.default = Parchment;
 Object.defineProperty(exports, "__esModule", { value: true });
 var LinkedList = /** @class */ (function () {
     function LinkedList() {
-        this.head = this.tail = undefined;
+        this.head = this.tail = null;
         this.length = 0;
     }
     LinkedList.prototype.append = function () {
@@ -1103,7 +1126,7 @@ var LinkedList = /** @class */ (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             nodes[_i] = arguments[_i];
         }
-        this.insertBefore(nodes[0], undefined);
+        this.insertBefore(nodes[0], null);
         if (nodes.length > 1) {
             this.append.apply(this, nodes.slice(1));
         }
@@ -1117,6 +1140,8 @@ var LinkedList = /** @class */ (function () {
         return false;
     };
     LinkedList.prototype.insertBefore = function (node, refNode) {
+        if (!node)
+            return;
         node.next = refNode;
         if (refNode != null) {
             node.prev = refNode.prev;
@@ -1134,7 +1159,7 @@ var LinkedList = /** @class */ (function () {
             this.tail = node;
         }
         else {
-            node.prev = undefined;
+            node.prev = null;
             this.head = this.tail = node;
         }
         this.length += 1;
@@ -1257,7 +1282,6 @@ var ScrollBlot = /** @class */ (function (_super) {
     function ScrollBlot(editorRegistry, node) {
         var _this = _super.call(this, editorRegistry, node) || this;
         _this.editorRegistry = editorRegistry;
-        _this.parent = null;
         _this.scroll = _this;
         _this.observer = new MutationObserver(function (mutations) {
             _this.update(mutations);
@@ -1307,7 +1331,9 @@ var ScrollBlot = /** @class */ (function (_super) {
                 return;
             if (blot.domNode.parentNode == null)
                 return;
+            // @ts-ignore
             if (blot.domNode[Registry.DATA_KEY].mutations == null) {
+                // @ts-ignore
                 blot.domNode[Registry.DATA_KEY].mutations = [];
             }
             if (markParent)
@@ -1315,7 +1341,10 @@ var ScrollBlot = /** @class */ (function (_super) {
         };
         var optimize = function (blot) {
             // Post-order traversal
-            if (blot.domNode[Registry.DATA_KEY] == null ||
+            if (
+            // @ts-ignore
+            blot.domNode[Registry.DATA_KEY] == null ||
+                // @ts-ignore
                 blot.domNode[Registry.DATA_KEY].mutations == null) {
                 return;
             }
@@ -1368,22 +1397,29 @@ var ScrollBlot = /** @class */ (function (_super) {
             .map(function (mutation) {
             var blot = _this.editorRegistry.find(mutation.target, true);
             if (blot == null)
-                return;
+                return null;
+            // @ts-ignore
             if (blot.domNode[Registry.DATA_KEY].mutations == null) {
+                // @ts-ignore
                 blot.domNode[Registry.DATA_KEY].mutations = [mutation];
                 return blot;
             }
             else {
+                // @ts-ignore
                 blot.domNode[Registry.DATA_KEY].mutations.push(mutation);
                 return null;
             }
         })
             .forEach(function (blot) {
+            // @ts-ignore
             if (blot == null || blot === _this || blot.domNode[Registry.DATA_KEY] == null)
                 return;
+            // @ts-ignore
             blot.update(blot.domNode[Registry.DATA_KEY].mutations || [], context);
         });
+        // @ts-ignore
         if (this.domNode[Registry.DATA_KEY].mutations != null) {
+            // @ts-ignore
             _super.prototype.update.call(this, this.domNode[Registry.DATA_KEY].mutations, context);
         }
         this.optimize(mutations, context);
@@ -1420,7 +1456,9 @@ var Registry = __webpack_require__(0);
 function isEqual(obj1, obj2) {
     if (Object.keys(obj1).length !== Object.keys(obj2).length)
         return false;
+    // @ts-ignore
     for (var prop in obj1) {
+        // @ts-ignore
         if (obj1[prop] !== obj2[prop])
             return false;
     }
@@ -1641,6 +1679,7 @@ var TextBlot = /** @class */ (function (_super) {
     };
     TextBlot.value = function (domNode) {
         var text = domNode.data;
+        // @ts-ignore
         if (text['normalize'])
             text = text['normalize']();
         return text;

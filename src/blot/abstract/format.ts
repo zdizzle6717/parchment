@@ -8,7 +8,7 @@ import EditorRegistry, * as Registry from '../../registry';
 class FormatBlot extends ContainerBlot implements Formattable {
   protected attributes: AttributorStore;
 
-  static formats(domNode, editorRegistry): any {
+  static formats(domNode: HTMLElement, editorRegistry: EditorRegistry): any {
     if (typeof this.tagName === 'string') {
       return true;
     } else if (Array.isArray(this.tagName)) {

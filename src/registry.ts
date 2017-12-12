@@ -4,7 +4,7 @@ import { Blot, Formattable } from './blot/abstract/blot';
 export interface BlotConstructor {
   blotName: string;
   new (editorRegistry: EditorRegistry, node: Node, value?: any): Blot;
-  create(value?): Node;
+  create(value?: any): Node;
 }
 
 export class ParchmentError extends Error {
@@ -12,7 +12,7 @@ export class ParchmentError extends Error {
   name: string;
   stack: string;
 
-  constructor(message) {
+  constructor(message: string) {
     message = '[Parchment] ' + message;
     super(message);
     this.message = message;
@@ -52,12 +52,14 @@ export default class EditorRegistry {
       }
       let BlotClass = <BlotConstructor>match;
       let node =
+        // @ts-ignore
         input instanceof Node || input['nodeType'] === Node.TEXT_NODE ? input : BlotClass.create(value);
       return new BlotClass(this, <Node>node, value);
     }
 
-    find(node: Node, bubble: boolean = false): Blot {
+    find(node: Node | null, bubble: boolean = false): Blot | null {
       if (node == null) return null;
+      // @ts-ignore
       if (node[DATA_KEY] != null) return node[DATA_KEY].blot;
       if (bubble) return this.find(node.parentNode, bubble);
       return null;
@@ -66,10 +68,11 @@ export default class EditorRegistry {
     query(
       query: string | Node | Scope,
       scope: Scope = Scope.ANY,
-    ): Attributor | BlotConstructor {
+    ): Attributor | BlotConstructor | null {
       let match;
       if (typeof query === 'string') {
         match = this.types[query] || this.attributes[query];
+        // @ts-ignore
       } else if (query instanceof Text || query['nodeType'] === Node.TEXT_NODE) {
         match = this.types['text'];
       } else if (typeof query === 'number') {
@@ -87,11 +90,12 @@ export default class EditorRegistry {
         match = match || this.tags[query.tagName];
       }
       if (match == null) return null;
+      // @ts-ignore
       if (scope & Scope.LEVEL & match.scope && scope & Scope.TYPE & match.scope) return match;
       return null;
     }
 
-    register(...Definitions) {
+    register(...Definitions: any[]): any {
       if (Definitions.length > 1) {
         return Definitions.map((d) => {
           return this.register(d);
@@ -112,14 +116,14 @@ export default class EditorRegistry {
         }
         if (Definition.tagName != null) {
           if (Array.isArray(Definition.tagName)) {
-            Definition.tagName = Definition.tagName.map(function(tagName) {
+            Definition.tagName = Definition.tagName.map(function(tagName: string) {
               return tagName.toUpperCase();
             });
           } else {
             Definition.tagName = Definition.tagName.toUpperCase();
           }
           let tagNames = Array.isArray(Definition.tagName) ? Definition.tagName : [Definition.tagName];
-          tagNames.forEach((tag) => {
+          tagNames.forEach((tag: string) => {
             if (this.tags[tag] == null || Definition.className == null) {
               this.tags[tag] = Definition;
             }

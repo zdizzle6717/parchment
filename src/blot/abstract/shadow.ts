@@ -46,6 +46,7 @@ class ShadowBlot implements Blot {
   }
 
   constructor(public editorRegistry: EditorRegistry, public domNode: Node) {
+    // @ts-ignore
     this.domNode[Registry.DATA_KEY] = { blot: this };
   }
 
@@ -62,6 +63,7 @@ class ShadowBlot implements Blot {
 
   detach() {
     if (this.parent != null) this.parent.removeChild(this);
+    // @ts-ignore
     delete this.domNode[Registry.DATA_KEY];
   }
 
@@ -87,19 +89,17 @@ class ShadowBlot implements Blot {
     this.parent.insertBefore(blot, ref);
   }
 
-  insertInto(parentBlot: Parent, refBlot?: Blot): void {
+  insertInto(parentBlot: Parent, refBlot: Blot | null = null): void {
     if (this.parent != null) {
       this.parent.children.remove(this);
     }
+    let refDomNode: Node | null = null;
     parentBlot.children.insertBefore(this, refBlot);
     if (refBlot != null) {
-      var refDomNode = refBlot.domNode;
+      refDomNode = refBlot.domNode;
     }
     if (this.next == null || this.domNode.nextSibling != refDomNode) {
-      parentBlot.domNode.insertBefore(
-        this.domNode,
-        typeof refDomNode !== 'undefined' ? refDomNode : null,
-      );
+      parentBlot.domNode.insertBefore(this.domNode, refDomNode);
     }
     this.parent = parentBlot;
     this.attach();
@@ -122,7 +122,9 @@ class ShadowBlot implements Blot {
 
   optimize(context: { [key: string]: any }): void {
     // TODO clean up once we use WeakMap
+    // @ts-ignore
     if (this.domNode[Registry.DATA_KEY] != null) {
+      // @ts-ignore
       delete this.domNode[Registry.DATA_KEY].mutations;
     }
   }

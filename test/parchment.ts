@@ -20,25 +20,41 @@ import Parchment from '../src/parchment';
 
 const TestingRegistry = new EditorRegistry();
 
+// @ts-ignore
 window['Attributor'] = Attributor;
+// @ts-ignore
 window['ClassAttributor'] = ClassAttributor;
+// @ts-ignore
 window['StyleAttributor'] = StyleAttributor;
 
+// @ts-ignore
 window['ShadowBlot'] = ShadowBlot;
+// @ts-ignore
 window['ContainerBlot'] = ContainerBlot;
+// @ts-ignore
 window['FormatBlot'] = FormatBlot;
+// @ts-ignore
 window['LeafBlot'] = LeafBlot;
+// @ts-ignore
 window['EmbedBlot'] = EmbedBlot;
 
+// @ts-ignore
 window['ScrollBlot'] = ScrollBlot;
+// @ts-ignore
 window['BlockBlot'] = BlockBlot;
+// @ts-ignore
 window['InlineBlot'] = InlineBlot;
+// @ts-ignore
 window['TextBlot'] = TextBlot;
 
+// @ts-ignore
 window['LinkedList'] = LinkedList;
 
+// @ts-ignore
 window['Parchment'] = Parchment;
+// @ts-ignore
 window['Registry'] = Registry;
+// @ts-ignore
 window['EditorRegistry'] = TestingRegistry;
 
 TestingRegistry.register(ScrollBlot);

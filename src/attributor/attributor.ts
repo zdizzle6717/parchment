@@ -9,10 +9,10 @@ export default class Attributor {
   attrName: string;
   keyName: string;
   scope: Registry.Scope;
-  whitelist: string[];
+  whitelist: string[] | null;
 
   static keys(node: HTMLElement): string[] {
-    return [].map.call(node.attributes, function(item) {
+    return [].map.call(node.attributes, function(item: Attr) {
       return item.name;
     });
   }
@@ -53,6 +53,9 @@ export default class Attributor {
 
   value(node: HTMLElement, editorRegistry: EditorRegistry): string {
     let value = node.getAttribute(this.keyName);
-    return this.canAdd(node, value, editorRegistry, ) ? value : '';
+    if (this.canAdd(node, value, editorRegistry) && value) {
+      return value;
+    }
+    return '';
   }
 }
