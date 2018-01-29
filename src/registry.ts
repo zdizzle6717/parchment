@@ -38,6 +38,14 @@ export enum Scope {
 
   ANY = TYPE | LEVEL,
 }
+  
+export function find(node: Node | null, bubble: boolean = false): Blot | null {
+  if (node == null) return null;
+  // @ts-ignore
+  if (node[DATA_KEY] != null) return node[DATA_KEY].blot;
+  if (bubble) return find(node.parentNode, bubble);
+  return null;
+}
 
 export default class EditorRegistry {
     attributes: { [key: string]: Attributor } = {};
@@ -55,14 +63,6 @@ export default class EditorRegistry {
         // @ts-ignore
         input instanceof Node || input['nodeType'] === Node.TEXT_NODE ? input : BlotClass.create(value);
       return new BlotClass(this, <Node>node, value);
-    }
-
-    find(node: Node | null, bubble: boolean = false): Blot | null {
-      if (node == null) return null;
-      // @ts-ignore
-      if (node[DATA_KEY] != null) return node[DATA_KEY].blot;
-      if (bubble) return this.find(node.parentNode, bubble);
-      return null;
     }
 
     query(

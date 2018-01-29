@@ -14,10 +14,11 @@ import ClassAttributor from './attributor/class';
 import StyleAttributor from './attributor/style';
 import AttributorStore from './attributor/store';
 
-import EditorRegistry, { Scope } from './registry';
+import EditorRegistry, { find, Scope } from './registry';
 
 let Parchment = {
   Scope,
+  find,
 
   Container: ContainerBlot,
   Format: FormatBlot,
